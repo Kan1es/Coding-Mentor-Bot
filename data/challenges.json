@@ -1,0 +1,92 @@
+[
+  {
+    "title": "Two Sum",
+    "description": "Given an array of integers nums and an integer target, return indices of the two numbers that add up to target.\n\nExample:\nInput: nums = [2,7,11,15], target = 9\nOutput: [0,1]\nExplanation: nums[0] + nums[1] = 2 + 7 = 9",
+    "difficulty": "easy",
+    "language": "python",
+    "test_cases": "Test Case 1:\nInput: [2,7,11,15], 9\nExpected: [0,1]\n\nTest Case 2:\nInput: [3,2,4], 6\nExpected: [1,2]",
+    "solution": "def two_sum(nums, target):\n    seen = {}\n    for i, num in enumerate(nums):\n        complement = target - num\n        if complement in seen:\n            return [seen[complement], i]\n        seen[num] = i\n    return []",
+    "points": 10
+  },
+  {
+    "title": "Reverse String",
+    "description": "Write a function that reverses a string. The input string is given as an array of characters.\n\nExample:\nInput: ['h','e','l','l','o']\nOutput: ['o','l','l','e','h']",
+    "difficulty": "easy",
+    "language": "python",
+    "test_cases": "Test Case 1:\nInput: ['h','e','l','l','o']\nExpected: ['o','l','l','e','h']\n\nTest Case 2:\nInput: ['H','a','n','n','a','h']\nExpected: ['h','a','n','n','a','H']",
+    "solution": "def reverse_string(s):\n    left, right = 0, len(s) - 1\n    while left < right:\n        s[left], s[right] = s[right], s[left]\n        left += 1\n        right -= 1",
+    "points": 10
+  },
+  {
+    "title": "Valid Palindrome",
+    "description": "Given a string s, return true if it is a palindrome, false otherwise. Consider only alphanumeric characters and ignore cases.\n\nExample:\nInput: 'A man, a plan, a canal: Panama'\nOutput: true",
+    "difficulty": "easy",
+    "language": "python",
+    "test_cases": "Test Case 1:\nInput: 'A man, a plan, a canal: Panama'\nExpected: true\n\nTest Case 2:\nInput: 'race a car'\nExpected: false",
+    "solution": "def is_palindrome(s):\n    cleaned = ''.join(c.lower() for c in s if c.isalnum())\n    return cleaned == cleaned[::-1]",
+    "points": 10
+  },
+  {
+    "title": "Binary Search",
+    "description": "Given a sorted array of integers and a target value, return the index of the target if found. If not found, return -1.\n\nExample:\nInput: nums = [-1,0,3,5,9,12], target = 9\nOutput: 4",
+    "difficulty": "medium",
+    "language": "python",
+    "test_cases": "Test Case 1:\nInput: [-1,0,3,5,9,12], 9\nExpected: 4\n\nTest Case 2:\nInput: [-1,0,3,5,9,12], 2\nExpected: -1",
+    "solution": "def binary_search(nums, target):\n    left, right = 0, len(nums) - 1\n    while left <= right:\n        mid = (left + right) // 2\n        if nums[mid] == target:\n            return mid\n        elif nums[mid] < target:\n            left = mid + 1\n        else:\n            right = mid - 1\n    return -1",
+    "points": 25
+  },
+  {
+    "title": "Longest Substring Without Repeating Characters",
+    "description": "Given a string s, find the length of the longest substring without repeating characters.\n\nExample:\nInput: 'abcabcbb'\nOutput: 3\nExplanation: The answer is 'abc', with length 3.",
+    "difficulty": "medium",
+    "language": "python",
+    "test_cases": "Test Case 1:\nInput: 'abcabcbb'\nExpected: 3\n\nTest Case 2:\nInput: 'bbbbb'\nExpected: 1\n\nTest Case 3:\nInput: 'pwwkew'\nExpected: 3",
+    "solution": "def length_of_longest_substring(s):\n    char_set = set()\n    left = 0\n    max_length = 0\n    for right in range(len(s)):\n        while s[right] in char_set:\n            char_set.remove(s[left])\n            left += 1\n        char_set.add(s[right])\n        max_length = max(max_length, right - left + 1)\n    return max_length",
+    "points": 25
+  },
+  {
+    "title": "Merge Sorted Arrays",
+    "description": "You are given two integer arrays nums1 and nums2, sorted in non-decreasing order. Merge nums2 into nums1 as one sorted array.\n\nExample:\nInput: nums1 = [1,2,3,0,0,0], m = 3, nums2 = [2,5,6], n = 3\nOutput: [1,2,2,3,5,6]",
+    "difficulty": "easy",
+    "language": "python",
+    "test_cases": "Test Case 1:\nInput: nums1 = [1,2,3,0,0,0], m = 3, nums2 = [2,5,6], n = 3\nExpected: [1,2,2,3,5,6]\n\nTest Case 2:\nInput: nums1 = [1], m = 1, nums2 = [], n = 0\nExpected: [1]",
+    "solution": "def merge(nums1, m, nums2, n):\n    i, j, k = m - 1, n - 1, m + n - 1\n    while j >= 0:\n        if i >= 0 and nums1[i] > nums2[j]:\n            nums1[k] = nums1[i]\n            i -= 1\n        else:\n            nums1[k] = nums2[j]\n            j -= 1\n        k -= 1",
+    "points": 10
+  },
+  {
+    "title": "Maximum Subarray Sum",
+    "description": "Given an integer array nums, find the contiguous subarray with the largest sum and return its sum.\n\nExample:\nInput: [-2,1,-3,4,-1,2,1,-5,4]\nOutput: 6\nExplanation: [4,-1,2,1] has the largest sum = 6.",
+    "difficulty": "medium",
+    "language": "python",
+    "test_cases": "Test Case 1:\nInput: [-2,1,-3,4,-1,2,1,-5,4]\nExpected: 6\n\nTest Case 2:\nInput: [1]\nExpected: 1\n\nTest Case 3:\nInput: [5,4,-1,7,8]\nExpected: 23",
+    "solution": "def max_subarray(nums):\n    max_sum = current_sum = nums[0]\n    for num in nums[1:]:\n        current_sum = max(num, current_sum + num)\n        max_sum = max(max_sum, current_sum)\n    return max_sum",
+    "points": 25
+  },
+  {
+    "title": "Valid Parentheses",
+    "description": "Given a string containing just the characters '(', ')', '{', '}', '[' and ']', determine if the input string is valid. Brackets must close in the correct order.\n\nExample:\nInput: '()[]{}'\nOutput: true",
+    "difficulty": "easy",
+    "language": "python",
+    "test_cases": "Test Case 1:\nInput: '()'\nExpected: true\n\nTest Case 2:\nInput: '()[]{}'\nExpected: true\n\nTest Case 3:\nInput: '(]'\nExpected: false",
+    "solution": "def is_valid(s):\n    stack = []\n    mapping = {')': '(', '}': '{', ']': '['}\n    for char in s:\n        if char in mapping:\n            if not stack or stack.pop() != mapping[char]:\n                return False\n        else:\n            stack.append(char)\n    return len(stack) == 0",
+    "points": 10
+  },
+  {
+    "title": "Median of Two Sorted Arrays",
+    "description": "Given two sorted arrays nums1 and nums2, return the median of the two sorted arrays.\n\nExample:\nInput: nums1 = [1,3], nums2 = [2]\nOutput: 2.0\nExplanation: merged array = [1,2,3] and median is 2.",
+    "difficulty": "hard",
+    "language": "python",
+    "test_cases": "Test Case 1:\nInput: nums1 = [1,3], nums2 = [2]\nExpected: 2.0\n\nTest Case 2:\nInput: nums1 = [1,2], nums2 = [3,4]\nExpected: 2.5",
+    "solution": "def find_median_sorted_arrays(nums1, nums2):\n    merged = sorted(nums1 + nums2)\n    n = len(merged)\n    if n % 2 == 0:\n        return (merged[n//2-1] + merged[n//2]) / 2\n    return float(merged[n//2])",
+    "points": 50
+  },
+  {
+    "title": "Trapping Rain Water",
+    "description": "Given n non-negative integers representing an elevation map where the width of each bar is 1, compute how much water it can trap after raining.\n\nExample:\nInput: [0,1,0,2,1,0,1,3,2,1,2,1]\nOutput: 6",
+    "difficulty": "hard",
+    "language": "python",
+    "test_cases": "Test Case 1:\nInput: [0,1,0,2,1,0,1,3,2,1,2,1]\nExpected: 6\n\nTest Case 2:\nInput: [4,2,0,3,2,5]\nExpected: 9",
+    "solution": "def trap(height):\n    if not height:\n        return 0\n    left, right = 0, len(height) - 1\n    left_max, right_max = height[left], height[right]\n    water = 0\n    while left < right:\n        if left_max < right_max:\n            left += 1\n            left_max = max(left_max, height[left])\n            water += left_max - height[left]\n        else:\n            right -= 1\n            right_max = max(right_max, height[right])\n            water += right_max - height[right]\n    return water",
+    "points": 50
+  }
+]

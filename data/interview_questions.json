@@ -1,0 +1,74 @@
+[
+    {
+        "category": "Algorithms",
+        "question": "Explain the difference between BFS and DFS. When would you use each?",
+        "answer": "BFS (Breadth-First Search) explores nodes level by level, using a queue. It's optimal for finding shortest paths in unweighted graphs. DFS (Depth-First Search) explores as far as possible along each branch before backtracking, using a stack or recursion. Use BFS for shortest path problems and DFS for topological sorting, cycle detection, or when you need to explore all paths.",
+        "difficulty": "medium"
+    },
+    {
+        "category": "Algorithms",
+        "question": "What is the time complexity of QuickSort? What about worst case?",
+        "answer": "QuickSort has an average time complexity of O(n log n) and space complexity of O(log n) due to recursion. The worst case is O(n²) when the pivot is always the smallest or largest element. This can be mitigated by using random pivot selection or median-of-three method.",
+        "difficulty": "easy"
+    },
+    {
+        "category": "Data Structures",
+        "question": "Explain how a HashMap works internally. What happens during collisions?",
+        "answer": "A HashMap uses a hash function to compute an index into an array of buckets. When collisions occur (two keys hash to the same index), there are two main approaches: 1) Chaining - each bucket contains a linked list of entries, 2) Open addressing - find another empty slot using probing. Modern implementations often use chaining with balanced trees for buckets with many collisions.",
+        "difficulty": "medium"
+    },
+    {
+        "category": "Data Structures",
+        "question": "What is the difference between a Stack and a Queue?",
+        "answer": "A Stack follows LIFO (Last In, First Out) principle - the last element added is the first to be removed. Operations: push, pop, peek. A Queue follows FIFO (First In, First Out) - the first element added is the first to be removed. Operations: enqueue, dequeue, peek. Stacks are used for function calls, undo operations. Queues are used for task scheduling, BFS.",
+        "difficulty": "easy"
+    },
+    {
+        "category": "Data Structures",
+        "question": "Explain the difference between a Binary Tree and a Binary Search Tree.",
+        "answer": "A Binary Tree is a tree where each node has at most two children. A Binary Search Tree (BST) is a binary tree with the additional property that for each node: all values in the left subtree are less than the node's value, and all values in the right subtree are greater. This property enables efficient searching, insertion, and deletion with O(log n) average time complexity.",
+        "difficulty": "easy"
+    },
+    {
+        "category": "System Design",
+        "question": "How would you design a URL shortening service like bit.ly?",
+        "answer": "Key components: 1) Hash function to generate short codes from long URLs, 2) Database to store mappings (NoSQL like Cassandra for scalability), 3) Cache layer (Redis) for frequently accessed URLs, 4) Load balancer for distributing traffic, 5) Analytics service for tracking clicks. Consider: collision handling, custom aliases, expiration, rate limiting, and geographic distribution of servers.",
+        "difficulty": "hard"
+    },
+    {
+        "category": "System Design",
+        "question": "What is the CAP theorem?",
+        "answer": "CAP theorem states that a distributed system can only guarantee two out of three properties: Consistency (all nodes see the same data), Availability (every request receives a response), and Partition Tolerance (system continues despite network partitions). In practice, partition tolerance is mandatory, so you choose between CP (consistent but may be unavailable) or AP (available but may be inconsistent).",
+        "difficulty": "medium"
+    },
+    {
+        "category": "OOP",
+        "question": "Explain the four pillars of Object-Oriented Programming.",
+        "answer": "1) Encapsulation - bundling data and methods that operate on that data within a class, hiding internal details. 2) Abstraction - hiding complex implementation details and showing only necessary features. 3) Inheritance - creating new classes from existing ones, promoting code reuse. 4) Polymorphism - ability of objects to take multiple forms, allowing methods to do different things based on the object.",
+        "difficulty": "easy"
+    },
+    {
+        "category": "OOP",
+        "question": "What is the difference between abstract class and interface?",
+        "answer": "Abstract class can have both abstract and concrete methods, can have instance variables, and supports single inheritance. Interface (in most languages) only has method signatures (though modern languages allow default implementations), cannot have instance variables, and supports multiple inheritance. Use abstract classes for 'is-a' relationships with shared implementation, interfaces for 'can-do' capabilities.",
+        "difficulty": "medium"
+    },
+    {
+        "category": "Algorithms",
+        "question": "What is dynamic programming? Give an example.",
+        "answer": "Dynamic programming is an optimization technique that solves complex problems by breaking them into simpler subproblems and storing their solutions to avoid redundant calculations. Key principles: optimal substructure and overlapping subproblems. Example: Fibonacci sequence - instead of recalculating fib(n-1) and fib(n-2) repeatedly, store results in an array. This reduces time complexity from O(2^n) to O(n).",
+        "difficulty": "medium"
+    },
+    {
+        "category": "Data Structures",
+        "question": "Explain how a Trie data structure works and its use cases.",
+        "answer": "A Trie (prefix tree) is a tree-like data structure for storing strings where each node represents a character. All descendants of a node share a common prefix. Operations like insert, search, and prefix search are O(m) where m is the key length. Use cases: autocomplete, spell checking, IP routing tables, and dictionary implementations. Space-efficient for storing many strings with common prefixes.",
+        "difficulty": "hard"
+    },
+    {
+        "category": "System Design",
+        "question": "What is load balancing and what algorithms can be used?",
+        "answer": "Load balancing distributes incoming network traffic across multiple servers to ensure no single server is overwhelmed. Common algorithms: 1) Round Robin - requests distributed sequentially, 2) Least Connections - sends to server with fewest active connections, 3) IP Hash - uses client IP to determine server, 4) Weighted Round Robin - assigns weights based on server capacity. Improves availability, scalability, and performance.",
+        "difficulty": "medium"
+    }
+]
