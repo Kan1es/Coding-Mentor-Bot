@@ -80,6 +80,16 @@ CREATE TABLE IF NOT EXISTS user_daily_challenges (
 )
 """
 
+BANNED_USERS_TABLE = """
+CREATE TABLE IF NOT EXISTS banned_users (
+    user_id INTEGER PRIMARY KEY,
+    banned_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    banned_by INTEGER,
+    reason TEXT,
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+)
+"""
+
 # Achievement definitions
 ACHIEVEMENTS = {
     "first_challenge": {

@@ -8,7 +8,7 @@ from database.db import Database
 from bot.utils.scheduler import BotScheduler
 
 # Import handlers
-from bot.handlers import start, challenges, submissions, interview, profile, leaderboard
+from bot.handlers import start, challenges, submissions, interview, profile, leaderboard, admin
 
 # Configure logging
 logging.basicConfig(
@@ -32,6 +32,7 @@ async def main():
     
     # Register routers
     dp.include_router(start.router)
+    dp.include_router(admin.router)
     dp.include_router(challenges.router)
     dp.include_router(submissions.router)
     dp.include_router(interview.router)

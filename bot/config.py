@@ -29,5 +29,3 @@ SUPPORTED_LANGUAGES = ["python", "javascript", "cpp"]
 MISTRAL_MODEL = "mistral-large-latest"  # or "codestral-latest" for code-specific tasks
 MISTRAL_MAX_TOKENS = 1000
 MISTRAL_TEMPERATURE = 0.7
-
-#test

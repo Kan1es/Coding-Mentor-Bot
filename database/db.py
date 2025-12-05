@@ -6,7 +6,7 @@ from bot.config import DATABASE_PATH
 from database.models import (
     USERS_TABLE, CHALLENGES_TABLE, SUBMISSIONS_TABLE,
     INTERVIEW_QUESTIONS_TABLE, USER_ACHIEVEMENTS_TABLE,
-    USER_DAILY_CHALLENGES_TABLE
+    USER_DAILY_CHALLENGES_TABLE, BANNED_USERS_TABLE
 )
 
 
@@ -25,6 +25,7 @@ class Database:
             await db.execute(INTERVIEW_QUESTIONS_TABLE)
             await db.execute(USER_ACHIEVEMENTS_TABLE)
             await db.execute(USER_DAILY_CHALLENGES_TABLE)
+            await db.execute(BANNED_USERS_TABLE)
             await db.commit()
     
     # User operations
@@ -247,5 +248,267 @@ class Database:
                    WHERE rating > (SELECT rating FROM users WHERE user_id = ?)""",
                 (user_id,)
             ) as cursor:
+                row = await cursor.fetchone()
+                return row[0] if row else 0
+    
+    # Admin operations - User Management
+    async def get_all_users(self, limit: int = 20, offset: int = 0) -> List[Dict[str, Any]]:
+        """Get all users with pagination."""
+        async with aiosqlite.connect(self.db_path) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute(
+                """SELECT u.*, b.banned_at IS NOT NULL as is_banned
+                   FROM users u
+                   LEFT JOIN banned_users b ON u.user_id = b.user_id
+                   ORDER BY u.created_at DESC
+                   LIMIT ? OFFSET ?""",
+                (limit, offset)
+            ) as cursor:
+                rows = await cursor.fetchall()
+                return [dict(row) for row in rows]
+    
+    async def search_users(self, query: str) -> List[Dict[str, Any]]:
+        """Search users by username or user_id."""
+        async with aiosqlite.connect(self.db_path) as db:
+            db.row_factory = aiosqlite.Row
+            # Try to parse as integer for user_id search
+            try:
+                user_id = int(query)
+                async with db.execute(
+                    """SELECT u.*, b.banned_at IS NOT NULL as is_banned
+                       FROM users u
+                       LEFT JOIN banned_users b ON u.user_id = b.user_id
+                       WHERE u.user_id = ?""",
+                    (user_id,)
+                ) as cursor:
+                    rows = await cursor.fetchall()
+                    return [dict(row) for row in rows]
+            except ValueError:
+                # Search by username
+                async with db.execute(
+                    """SELECT u.*, b.banned_at IS NOT NULL as is_banned
+                       FROM users u
+                       LEFT JOIN banned_users b ON u.user_id = b.user_id
+                       WHERE u.username LIKE ?
+                       LIMIT 20""",
+                    (f"%{query}%",)
+                ) as cursor:
+                    rows = await cursor.fetchall()
+                    return [dict(row) for row in rows]
+    
+    async def get_user_count(self) -> int:
+        """Get total number of users."""
+        async with aiosqlite.connect(self.db_path) as db:
+            async with db.execute("SELECT COUNT(*) FROM users") as cursor:
+                row = await cursor.fetchone()
+                return row[0] if row else 0
+    
+    async def get_active_users_count(self, days: int = 7) -> int:
+        """Get number of users active in last N days."""
+        from datetime import timedelta
+        cutoff_date = (datetime.now() - timedelta(days=days)).isoformat()
+        
+        async with aiosqlite.connect(self.db_path) as db:
+            async with db.execute(
+                "SELECT COUNT(*) FROM users WHERE last_active >= ?",
+                (cutoff_date,)
+            ) as cursor:
+                row = await cursor.fetchone()
+                return row[0] if row else 0
+    
+    async def ban_user(self, user_id: int, banned_by: int, reason: str = "") -> None:
+        """Ban a user."""
+        async with aiosqlite.connect(self.db_path) as db:
+            await db.execute(
+                """INSERT OR REPLACE INTO banned_users (user_id, banned_by, reason)
+                   VALUES (?, ?, ?)""",
+                (user_id, banned_by, reason)
+            )
+            await db.commit()
+    
+    async def unban_user(self, user_id: int) -> None:
+        """Unban a user."""
+        async with aiosqlite.connect(self.db_path) as db:
+            await db.execute("DELETE FROM banned_users WHERE user_id = ?", (user_id,))
+            await db.commit()
+    
+    async def is_user_banned(self, user_id: int) -> bool:
+        """Check if user is banned."""
+        async with aiosqlite.connect(self.db_path) as db:
+            async with db.execute(
+                "SELECT 1 FROM banned_users WHERE user_id = ?",
+                (user_id,)
+            ) as cursor:
+                row = await cursor.fetchone()
+                return row is not None
+    
+    async def delete_user(self, user_id: int) -> None:
+        """Delete user and all related data."""
+        async with aiosqlite.connect(self.db_path) as db:
+            await db.execute("DELETE FROM submissions WHERE user_id = ?", (user_id,))
+            await db.execute("DELETE FROM user_achievements WHERE user_id = ?", (user_id,))
+            await db.execute("DELETE FROM user_daily_challenges WHERE user_id = ?", (user_id,))
+            await db.execute("DELETE FROM banned_users WHERE user_id = ?", (user_id,))
+            await db.execute("DELETE FROM users WHERE user_id = ?", (user_id,))
+            await db.commit()
+    
+    # Admin operations - Challenge Management
+    async def get_all_challenges(self, limit: int = 20, offset: int = 0) -> List[Dict[str, Any]]:
+        """Get all challenges with pagination."""
+        async with aiosqlite.connect(self.db_path) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute(
+                """SELECT * FROM challenges
+                   ORDER BY created_at DESC
+                   LIMIT ? OFFSET ?""",
+                (limit, offset)
+            ) as cursor:
+                rows = await cursor.fetchall()
+                return [dict(row) for row in rows]
+    
+    async def update_challenge(self, challenge_id: int, **kwargs) -> None:
+        """Update challenge fields."""
+        if not kwargs:
+            return
+        
+        fields = ", ".join([f"{k} = ?" for k in kwargs.keys()])
+        values = list(kwargs.values()) + [challenge_id]
+        
+        async with aiosqlite.connect(self.db_path) as db:
+            await db.execute(
+                f"UPDATE challenges SET {fields} WHERE id = ?",
+                values
+            )
+            await db.commit()
+    
+    async def delete_challenge(self, challenge_id: int) -> None:
+        """Delete challenge and related data."""
+        async with aiosqlite.connect(self.db_path) as db:
+            await db.execute("DELETE FROM submissions WHERE challenge_id = ?", (challenge_id,))
+            await db.execute("DELETE FROM user_daily_challenges WHERE challenge_id = ?", (challenge_id,))
+            await db.execute("DELETE FROM challenges WHERE id = ?", (challenge_id,))
+            await db.commit()
+    
+    async def get_challenge_count(self) -> int:
+        """Get total number of challenges."""
+        async with aiosqlite.connect(self.db_path) as db:
+            async with db.execute("SELECT COUNT(*) FROM challenges") as cursor:
+                row = await cursor.fetchone()
+                return row[0] if row else 0
+    
+    async def get_challenges_count_by_difficulty(self) -> Dict[str, int]:
+        """Get challenge count grouped by difficulty."""
+        async with aiosqlite.connect(self.db_path) as db:
+            async with db.execute(
+                """SELECT difficulty, COUNT(*) as count
+                   FROM challenges
+                   GROUP BY difficulty"""
+            ) as cursor:
+                rows = await cursor.fetchall()
+                return {row[0]: row[1] for row in rows}
+    
+    # Admin operations - Statistics
+    async def get_total_submissions(self) -> int:
+        """Get total number of submissions."""
+        async with aiosqlite.connect(self.db_path) as db:
+            async with db.execute("SELECT COUNT(*) FROM submissions") as cursor:
+                row = await cursor.fetchone()
+                return row[0] if row else 0
+    
+    async def get_submissions_by_status(self) -> Dict[str, int]:
+        """Get submission count grouped by status."""
+        async with aiosqlite.connect(self.db_path) as db:
+            async with db.execute(
+                """SELECT status, COUNT(*) as count
+                   FROM submissions
+                   GROUP BY status"""
+            ) as cursor:
+                rows = await cursor.fetchall()
+                return {row[0]: row[1] for row in rows}
+    
+    async def get_top_users(self, limit: int = 10) -> List[Dict[str, Any]]:
+        """Get most active users by submission count."""
+        async with aiosqlite.connect(self.db_path) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute(
+                """SELECT u.user_id, u.username, u.rating, u.completed_challenges,
+                          COUNT(s.id) as submission_count
+                   FROM users u
+                   LEFT JOIN submissions s ON u.user_id = s.user_id
+                   GROUP BY u.user_id
+                   ORDER BY submission_count DESC
+                   LIMIT ?""",
+                (limit,)
+            ) as cursor:
+                rows = await cursor.fetchall()
+                return [dict(row) for row in rows]
+    
+    async def get_recent_activity(self, days: int = 7, limit: int = 20) -> List[Dict[str, Any]]:
+        """Get recent user activity."""
+        from datetime import timedelta
+        cutoff_date = (datetime.now() - timedelta(days=days)).isoformat()
+        
+        async with aiosqlite.connect(self.db_path) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute(
+                """SELECT s.*, u.username, c.title as challenge_title
+                   FROM submissions s
+                   JOIN users u ON s.user_id = u.user_id
+                   JOIN challenges c ON s.challenge_id = c.id
+                   WHERE s.submitted_at >= ?
+                   ORDER BY s.submitted_at DESC
+                   LIMIT ?""",
+                (cutoff_date, limit)
+            ) as cursor:
+                rows = await cursor.fetchall()
+                return [dict(row) for row in rows]
+    
+    # Admin operations - Interview Questions Management
+    async def get_all_interview_questions(self, category: Optional[str] = None, 
+                                          limit: int = 20, offset: int = 0) -> List[Dict[str, Any]]:
+        """Get all interview questions with pagination."""
+        async with aiosqlite.connect(self.db_path) as db:
+            db.row_factory = aiosqlite.Row
+            if category:
+                query = """SELECT * FROM interview_questions
+                          WHERE category = ?
+                          ORDER BY created_at DESC
+                          LIMIT ? OFFSET ?"""
+                params = (category, limit, offset)
+            else:
+                query = """SELECT * FROM interview_questions
+                          ORDER BY created_at DESC
+                          LIMIT ? OFFSET ?"""
+                params = (limit, offset)
+            
+            async with db.execute(query, params) as cursor:
+                rows = await cursor.fetchall()
+                return [dict(row) for row in rows]
+    
+    async def update_interview_question(self, question_id: int, **kwargs) -> None:
+        """Update interview question fields."""
+        if not kwargs:
+            return
+        
+        fields = ", ".join([f"{k} = ?" for k in kwargs.keys()])
+        values = list(kwargs.values()) + [question_id]
+        
+        async with aiosqlite.connect(self.db_path) as db:
+            await db.execute(
+                f"UPDATE interview_questions SET {fields} WHERE id = ?",
+                values
+            )
+            await db.commit()
+    
+    async def delete_interview_question(self, question_id: int) -> None:
+        """Delete interview question."""
+        async with aiosqlite.connect(self.db_path) as db:
+            await db.execute("DELETE FROM interview_questions WHERE id = ?", (question_id,))
+            await db.commit()
+    
+    async def get_interview_question_count(self) -> int:
+        """Get total number of interview questions."""
+        async with aiosqlite.connect(self.db_path) as db:
+            async with db.execute("SELECT COUNT(*) FROM interview_questions") as cursor:
                 row = await cursor.fetchone()
                 return row[0] if row else 0
