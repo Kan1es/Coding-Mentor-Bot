@@ -1,10 +1,13 @@
 """Keyboard layouts for the bot."""
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from typing import Optional
+
+from bot.utils.admin_utils import is_admin
 
 
-def get_main_menu() -> InlineKeyboardMarkup:
-    """Get main menu keyboard."""
-    keyboard = InlineKeyboardMarkup(inline_keyboard=[
+def get_main_menu(user_id: Optional[int] = None) -> InlineKeyboardMarkup:
+    """Get main menu keyboard with optional admin button."""
+    buttons = [
         [InlineKeyboardButton(text="📝 Daily Challenge", callback_data="daily_challenge")],
         [InlineKeyboardButton(text="💻 Submit Code", callback_data="submit_code")],
         [InlineKeyboardButton(text="🎯 Interview Prep", callback_data="interview_prep")],
@@ -12,8 +15,13 @@ def get_main_menu() -> InlineKeyboardMarkup:
             InlineKeyboardButton(text="👤 Profile", callback_data="profile"),
             InlineKeyboardButton(text="🏆 Leaderboard", callback_data="leaderboard")
         ]
-    ])
-    return keyboard
+    ]
+    
+    # Add admin panel button only for admins
+    if user_id is not None and is_admin(user_id):
+        buttons.append([InlineKeyboardButton(text="⚙️ Admin Panel", callback_data="admin_panel")])
+    
+    return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 
 def get_difficulty_keyboard() -> InlineKeyboardMarkup:

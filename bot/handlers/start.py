@@ -4,8 +4,6 @@ from aiogram.filters import CommandStart
 from aiogram.types import Message, CallbackQuery
 from database.db import Database
 from bot.keyboards import get_main_menu
-from bot.config import ADMIN_USER_IDS
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 router = Router()
 db = Database()
@@ -38,15 +36,7 @@ Current Rating: {user['rating']} ⭐
 Level: {user['level']} 🎯
 Streak: {user['streak']} 🔥"""
     
-    # Get keyboard with admin button if user is admin
-    keyboard = get_main_menu()
-    if user_id in ADMIN_USER_IDS:
-        # Add admin panel button
-        keyboard.inline_keyboard.append([
-            InlineKeyboardButton(text="⚙️ Admin Panel", callback_data="admin_panel")
-        ])
-    
-    await message.answer(welcome_text, reply_markup=keyboard)
+    await message.answer(welcome_text, reply_markup=get_main_menu(user_id))
 
 
 @router.callback_query(F.data == "main_menu")
@@ -66,13 +56,5 @@ Choose an option:"""
     else:
         text = "🏠 Main Menu\n\nChoose an option:"
     
-    # Get keyboard with admin button if user is admin
-    keyboard = get_main_menu()
-    if user_id in ADMIN_USER_IDS:
-        # Add admin panel button
-        keyboard.inline_keyboard.append([
-            InlineKeyboardButton(text="⚙️ Admin Panel", callback_data="admin_panel")
-        ])
-    
-    await callback.message.edit_text(text, reply_markup=keyboard)
+    await callback.message.edit_text(text, reply_markup=get_main_menu(user_id))
     await callback.answer()
