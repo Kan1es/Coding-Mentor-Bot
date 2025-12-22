@@ -186,8 +186,8 @@ def get_admin_challenges_keyboard(page: int = 0, has_next: bool = False) -> Inli
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 
-def get_challenge_actions_keyboard(challenge_id: int) -> InlineKeyboardMarkup:
-    """Get actions keyboard for specific challenge."""
+def get_admin_challenge_actions_keyboard(challenge_id: int) -> InlineKeyboardMarkup:
+    """Get actions keyboard for specific challenge (admin)."""
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="✏️ Edit", callback_data=f"admin_edit_challenge_{challenge_id}")],
         [InlineKeyboardButton(text="🗑️ Delete", callback_data=f"admin_delete_challenge_{challenge_id}")],

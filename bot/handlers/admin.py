@@ -8,7 +8,7 @@ from database.db import Database
 from bot.keyboards import (
     get_admin_menu, get_admin_stats_keyboard, get_admin_users_keyboard,
     get_user_actions_keyboard, get_admin_challenges_keyboard,
-    get_challenge_actions_keyboard, get_admin_interview_keyboard,
+    get_admin_challenge_actions_keyboard, get_admin_interview_keyboard,
     get_interview_question_actions_keyboard, get_broadcast_keyboard,
     get_confirm_keyboard, get_main_menu
 )
