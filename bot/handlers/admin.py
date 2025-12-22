@@ -43,8 +43,24 @@ class AdminStates(StatesGroup):
 @router.callback_query(F.data == "admin_panel")
 async def show_admin_panel(callback: CallbackQuery):
     """Show admin panel main menu."""
-    if not is_admin(callback.from_user.id):
-        await callback.answer("❌ Access denied. Admin only.", show_alert=True)
+    user_id = callback.from_user.id
+    
+    # Redirect non-admins to main menu instead of showing error
+    if not is_admin(user_id):
+        user = await db.get_user(user_id)
+        if user:
+            text = f"""🏠 Main Menu
+
+Rating: {user['rating']} ⭐
+Level: {user['level']} 🎯
+Streak: {user['streak']} 🔥
+
+Choose an option:"""
+        else:
+            text = "🏠 Main Menu\n\nChoose an option:"
+        
+        await callback.message.edit_text(text, reply_markup=get_main_menu(user_id))
+        await callback.answer()
         return
     
     text = """
